@@ -26,8 +26,8 @@ async def get_detail_task(task_id: int):
 
 
 @router.put("/todo/{task_id}", tags=['todo'])
-async def update_task(task_id: int):
-    result = await connector.update_task(task_id)
+async def update_task(task_id: int, task_data: TaskData):
+    result = await connector.update_task(task_id, task_data)
     return result
 
 
