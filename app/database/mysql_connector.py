@@ -11,14 +11,14 @@ class MysqlConnector:
     async def connect(self):
         loop = asyncio.get_event_loop()
         conn = await aiomysql.connect(
-            host=mysql_config.host, port=mysql_config.port,
+            host=mysql_config.host, port=int(mysql_config.port),
             user=mysql_config.username, password=mysql_config.password,
             db=mysql_config.database, loop=loop
         )
 
         async with conn.cursor() as cur:
             await cur.execute(self.sql_query_create_table)
-            await cur.commit()
+            await conn.commit()
 
         return conn
     
@@ -27,11 +27,11 @@ class MysqlTodo(MysqlConnector):
     async def get_all_tasks(self):
         conn = await self.connect()
 
-        async with conn.cursor() as cur:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
             sql = "SELECT * FROM tasks"
             await cur.execute(sql)
             result = await cur.fetchall()
-        
+
         conn.close()
         return result 
 
@@ -41,19 +41,19 @@ class MysqlTodo(MysqlConnector):
         async with conn.cursor() as cur:
             sql = "INSERT INTO tasks (title, text) VALUES (%s, %s)"
             await cur.execute(sql, (task_data['title'], task_data['text']))
-            await cur.commit()
+            await conn.commit()
         
         conn.close()
-        return 
+        return {"detail": "the task was successfully added"}
     
     async def get_detail_task(self, task_id):
         conn = await self.connect()
 
-        async with conn.cursor() as cur:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
             sql = "SELECT * FROM tasks WHERE id = %s"
             await cur.execute(sql, (task_id,))
             result = await cur.fetchone()
-        
+
         conn.close()
         return result   
     
@@ -63,10 +63,10 @@ class MysqlTodo(MysqlConnector):
         async with conn.cursor() as cur:
             sql = "UPDATE tasks SET title = %s, text = %s WHERE id = %s"
             await cur.execute(sql, (task_data['title'], task_data['text'], task_data['id']))
-            await cur.commit()
+            await conn.commit()
         
         conn.close()
-        return 
+        return {"detail": "the task was successfully updated"}
     
     async def delete_task(self, task_data):
         conn = await self.connect()
@@ -74,10 +74,11 @@ class MysqlTodo(MysqlConnector):
         async with conn.cursor() as cur:
             sql = "DELETE FROM tasks WHERE id = %s"
             await cur.execute(sql, (task_data['id']))
-            await cur.commit()
+            await conn.commit()
         
         conn.close()
-        return 
+        return {"detail": "the task was successfully deleted"}
+
     
 
 connector = MysqlTodo(
