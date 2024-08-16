@@ -14,5 +14,4 @@ class MysqlConfig:
         self.database = env.get("MYSQL_DATABASE", "tasks_db")
 
 
-
 mysql_config = MysqlConfig(os.environ)
