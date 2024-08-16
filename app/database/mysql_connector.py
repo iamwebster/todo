@@ -40,7 +40,7 @@ class MysqlTodo(MysqlConnector):
 
         async with conn.cursor() as cur:
             sql = "INSERT INTO tasks (title, text) VALUES (%s, %s)"
-            await cur.execute(sql, (task_data['title'], task_data['text']))
+            await cur.execute(sql, (task_data.title, task_data.text))
             await conn.commit()
         
         conn.close()
@@ -57,23 +57,23 @@ class MysqlTodo(MysqlConnector):
         conn.close()
         return result   
     
-    async def update_task(self, task_data):
+    async def update_task(self, task_id, task_data):
         conn = await self.connect()
 
         async with conn.cursor() as cur:
             sql = "UPDATE tasks SET title = %s, text = %s WHERE id = %s"
-            await cur.execute(sql, (task_data['title'], task_data['text'], task_data['id']))
+            await cur.execute(sql, (task_data.title, task_data.text, task_id))
             await conn.commit()
         
         conn.close()
         return {"detail": "the task was successfully updated"}
     
-    async def delete_task(self, task_data):
+    async def delete_task(self, task_id):
         conn = await self.connect()
 
         async with conn.cursor() as cur:
             sql = "DELETE FROM tasks WHERE id = %s"
-            await cur.execute(sql, (task_data['id']))
+            await cur.execute(sql, (task_id))
             await conn.commit()
         
         conn.close()
